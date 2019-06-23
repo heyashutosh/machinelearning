@@ -1,0 +1,69 @@
+
+
+# To enable plotting graphs in Jupyter notebook
+%matplotlib inline
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+
+# importing ploting libraries
+import matplotlib.pyplot as plt   
+
+#importing seaborn for statistical plots
+import seaborn as sns
+
+#Let us break the X and y dataframes into training set and test set. For this we will use
+#Sklearn package's data splitting function which is based on random function
+
+from sklearn.model_selection import train_test_split
+
+import numpy as np
+import os,sys
+from scipy import stats
+
+# calculate accuracy measures and confusion matrix
+from sklearn import metrics
+
+df = pd.read_csv(r'C:\Users\Ashutosh\Desktop\GL\Module 3\Week-11\CreditRisk.csv')
+df.head()
+
+cr_df = df.drop('Loan_ID', axis =1 ) # dropping this column as it will be 1-1 mapping anyways
+cr_df.head()
+
+# One hot encoding for all the categorical variables
+cr_df['Property_Area'] = cr_df['Property_Area'].replace( {"Rural" : 1, 'Urban' :2, 'Semiurban' :3})
+cr_df['Self_Employed'] = cr_df['Self_Employed'].replace( {"Yes" : 0, 'No' :1})
+cr_df['Married'] = cr_df['Married'].replace( {"Yes" : 10, 'No' :11})
+cr_df['Dependents'] = cr_df['Dependents'].replace( {"3+" : 3})
+cr_df['Education'] = cr_df['Education'].replace({"Graduate" : 8, "Not Graduate" : 9})
+cr_df['Gender'] = cr_df['Gender'].replace({"Male" : 4, "Female" : 5})
+
+cr_df.head()
+
+# every column's missing value is replaced with 0 respectively
+cr_df = cr_df.fillna('0')
+#cr_df = cr_df.replace({'NaN':df.median()})
+cr_df
+
+#Lets analysze the distribution of the various attribute
+cr_df.describe().transpose()
+
+# Let us look at the target column which is 'Loan_Status' to understand how the data is distributed amongst the various values
+cr_df.groupby(["Loan_Status"]).count()
+
+cr_df.info()
+
+array = cr_df.values
+X = array[:,0:10] # select all rows and first 8 columns which are the attributes
+Y = array[:,11]   # select all rows and the 8th column which is the classification "Yes", "No"
+test_size = 0.30 # taking 70:30 training and test set
+seed = 7  # Random numbmer seeding for reapeatability of the code
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=test_size, random_state=seed)
+type(X_train)
+
+# Fit the model on 30%
+model = LogisticRegression()
+model.fit(X_train, y_train)
+y_predict = model.predict(X_test)
+model_score = model.score(X_test, y_test)
+print(model_score)
+print(metrics.confusion_matrix(y_test, y_predict))
